@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, timestamp, numeric, integer, unique, uuid, foreignKey } from "drizzle-orm/pg-core"
+import { pgTable, serial, varchar, text, timestamp, numeric, integer, foreignKey, unique, date, boolean } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -27,6 +27,59 @@ export const systemSettings = pgTable("system_settings", {
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
 });
 
+export const bookings = pgTable("bookings", {
+	id: serial().primaryKey().notNull(),
+	bookingRef: varchar("booking_ref").notNull(),
+	roomId: integer("room_id").notNull(),
+	contactNumber: varchar("contact_number"),
+	checkInDate: date("check_in_date").notNull(),
+	checkOutDate: date("check_out_date").notNull(),
+	occupantsCount: integer("occupants_count").notNull(),
+	status: varchar().default('RESERVED').notNull(),
+	paymentStatus: varchar("payment_status").default('CURRENT').notNull(),
+	depositDeadline: timestamp("deposit_deadline", { withTimezone: true, mode: 'string' }).notNull(),
+	finalDueDate: timestamp("final_due_date", { withTimezone: true, mode: 'string' }),
+	depositPctSnapshot: numeric("deposit_pct_snapshot", { precision: 5, scale:  2 }).notNull(),
+	cancellationReason: text("cancellation_reason"),
+	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+	firstName: varchar("first_name").notNull(),
+	lastName: varchar("last_name").notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.roomId],
+			foreignColumns: [rooms.id],
+			name: "bookings_room_id_rooms_id_fk"
+		}),
+	unique("bookings_booking_ref_unique").on(table.bookingRef),
+]);
+
+export const rooms = pgTable("rooms", {
+	id: serial().primaryKey().notNull(),
+	roomNumber: varchar("room_number").notNull(),
+	type: varchar().notNull(),
+	capacity: integer().notNull(),
+	basePrice: numeric("base_price", { precision: 19, scale:  4 }).notNull(),
+	status: varchar().default('AVAILABLE').notNull(),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("rooms_room_number_unique").on(table.roomNumber),
+]);
+
+export const users = pgTable("users", {
+	id: serial().primaryKey().notNull(),
+	name: varchar().notNull(),
+	email: varchar().notNull(),
+	password: text().notNull(),
+	role: varchar().default('STAFF').notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("users_email_unique").on(table.email),
+]);
+
 export const ledgerTransactions = pgTable("ledger_transactions", {
 	id: serial().primaryKey().notNull(),
 	bookingId: integer("booking_id").notNull(),
@@ -37,37 +90,10 @@ export const ledgerTransactions = pgTable("ledger_transactions", {
 	paymentMethod: varchar("payment_method"),
 	referenceNumber: varchar("reference_number"),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-});
-
-export const users = pgTable("users", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	name: text().notNull(),
-	email: text().notNull(),
-	role: text().default('staff'),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
-}, (table) => [
-	unique("users_email_unique").on(table.email),
-]);
-
-export const rooms = pgTable("rooms", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	name: text().notNull(),
-	price: integer().notNull(),
-	status: text().default('available'),
-});
-
-export const bookings = pgTable("bookings", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	guestName: text("guest_name").notNull(),
-	roomId: uuid("room_id").notNull(),
-	checkIn: timestamp("check_in", { mode: 'string' }).notNull(),
-	checkOut: timestamp("check_out", { mode: 'string' }).notNull(),
-	totalPrice: integer("total_price").notNull(),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
 }, (table) => [
 	foreignKey({
-			columns: [table.roomId],
-			foreignColumns: [rooms.id],
-			name: "bookings_room_id_rooms_id_fk"
+			columns: [table.bookingId],
+			foreignColumns: [bookings.id],
+			name: "ledger_transactions_booking_id_bookings_id_fk"
 		}),
 ]);
