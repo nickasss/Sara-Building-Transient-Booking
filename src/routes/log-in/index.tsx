@@ -2,7 +2,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
 import { z } from 'zod'
-import { authClient } from '#/lib/auth-client'
+import { authClient } from '@/lib/auth-client'
 
 const emailSchema = z.email('Enter a valid email');
 
