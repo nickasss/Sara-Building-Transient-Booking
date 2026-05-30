@@ -4,3 +4,4 @@ export * from "./bookings";
 export * from "./ledger-transactions";
 export * from "./users";
 export * from "./audit-logs";
+export * from "../../../auth-schema";

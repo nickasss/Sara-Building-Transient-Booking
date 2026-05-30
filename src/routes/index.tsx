@@ -82,7 +82,7 @@ function App() {
 						<code>src/components/Footer.tsx</code> for brand links.
 					</li>
 					<li>
-						Configure your database in <code>src/db/schema.ts</code> and{" "}
+						Configure your database in <code>src/db/schema/</code> and{" "}
 						<code>drizzle.config.ts</code>.
 					</li>
 				</ul>
